@@ -1,103 +1,93 @@
 import 'dart:async';
-// import 'dart:io';
 import 'dart:convert';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import './libro.dart';
+import './libroShow.dart';
 // import 'package:image_picker/image_picker.dart';
-
-// TODO: Actualizar vista del libro en función de la data devuelta
 
 void main() {
   runApp(new MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: MyHome(),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
+class MyHome extends StatefulWidget {
+  @override
+  _MyHomeState createState() => new _MyHomeState();
+}
+
+class _MyHomeState extends State<MyHome> {
   String barcode = "";
+  Libro libro;
 
   @override
   initState() {
     super.initState();
   }
 
-  // File galleryFile;
-//   imageSelectorGallery() async {
-//     galleryFile = await ImagePicker.pickImage(
-//       source: ImageSource.gallery,
-// // maxHeight: 50.0,
-// // maxWidth: 50.0,
-//     );
-//     print("You selected gallery image : " + galleryFile.path);
-//     setState(() {});
-//   }
-
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-          appBar: new AppBar(
-            title: new Text('Mobile Organizer of Books'),
-          ),
-          body: new Center(
-            child: new Column(
-              children: <Widget>[
-                new Container(
-                  child: new RaisedButton(
-                      onPressed: barcodeScanning,
-                      child: new Text("Escanear código de barras")),
-                  padding: const EdgeInsets.all(8.0),
-                ),
-                new Padding(
-                  padding: const EdgeInsets.all(8.0),
-                ),
-                new Text("Código de barras escaneado : " + barcode),
-                // Container(
-                //   child: RaisedButton(
-                //       onPressed: getLibro, child: Text('Buscar libro 1')),
-                // ),
-                // displayImage(),
-              ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Mobile Organizer of Books'),
+      ),
+      body: Center(
+        child: Column(
+          children: <Widget>[
+            Container(
+              child: RaisedButton(
+                  onPressed: barcodeScanning,
+                  child: Text("Escanear código de barras")),
+              padding: const EdgeInsets.all(8.0),
             ),
-          )),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+            ),
+            Text("Código de barras escaneado : " + barcode),
+            Baseline(
+              baselineType: TextBaseline.ideographic,
+              baseline: 60,
+              child: Card(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    ListTile(
+                      leading: Icon(Icons.book),
+                      title: Text('${libro?.nombre ?? ""}'),
+                      subtitle: Text(
+                          'Autor: ${libro?.nombreAutor} ${libro?.apellidoAutor}.'),
+                    ),
+                    RaisedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LibroShow(
+                                  libro: libro,
+                                ),
+                          ),
+                        );
+                      },
+                      child: Text('Mas info'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
     );
-  }
-
-  // Widget displayImage() {
-  //   return new SizedBox(
-  //     height: 300.0,
-  //     width: 400.0,
-  //     child: galleryFile == null
-  //         ? new Text('Sorry nothing to display')
-  //         : new Image.file(galleryFile),
-  //   );
-  // }
-
-  // Hace un GET para buscar el libro por ID
-  Future getLibro() async {
-    final String url = 'http://192.168.0.245:3000/libros/1.json';
-    print('****** Fetching');
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json',
-      },
-    );
-    if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON.
-      print('****** Libro: ${response.body}');
-      return Libro.fromJson(json.decode(response.body));
-    } else {
-      // If that response was not OK, throw an error.
-      throw Exception('Failed to load Libro');
-    }
   }
 
   // Hace un POST para buscar el barcode
@@ -115,7 +105,6 @@ class _MyAppState extends State<MyApp> {
     );
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON.
-      print('Libro: ${response.body}');
       return Libro.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
@@ -128,9 +117,11 @@ class _MyAppState extends State<MyApp> {
 //imageSelectorGallery();
     try {
       String barcode = await BarcodeScanner.scan();
-      print('***** Barcode: $barcode');
       setState(() => this.barcode = barcode);
       Libro libro = await fetchLibroByBarcode(barcode);
+      setState(() {
+        this.libro = libro;
+      });
       print('***** LibroJson: ${libro.toJson()}');
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
@@ -147,3 +138,43 @@ class _MyAppState extends State<MyApp> {
     }
   }
 }
+
+// File galleryFile;
+//   imageSelectorGallery() async {
+//     galleryFile = await ImagePicker.pickImage(
+//       source: ImageSource.gallery,
+// // maxHeight: 50.0,
+// // maxWidth: 50.0,
+//     );
+//     print("You selected gallery image : " + galleryFile.path);
+//     setState(() {});
+//   }
+
+// Widget displayImage() {
+//   return new SizedBox(
+//     height: 300.0,
+//     width: 400.0,
+//     child: galleryFile == null
+//         ? new Text('Sorry nothing to display')
+//         : new Image.file(galleryFile),
+//   );
+// }
+
+// // Hace un GET para buscar el libro por ID
+// Future getLibro() async {
+//   final String url = 'http://192.168.0.245:3000/libros/1.json';
+//   print('****** Fetching');
+//   final response = await http.get(
+//     url,
+//     headers: {
+//       'Content-type': 'application/json',
+//       'Accept': 'application/json',
+//     },
+//   );
+//   if (response.statusCode == 200) {
+//     print('****** Libro: ${response.body}');
+//     return Libro.fromJson(json.decode(response.body));
+//   } else {
+//     throw Exception('Failed to load Libro');
+//   }
+// }
