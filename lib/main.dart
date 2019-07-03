@@ -28,7 +28,7 @@ class MyHome extends StatefulWidget {
 
 class _MyHomeState extends State<MyHome> {
   String barcode = "";
-  Libro libro;
+  Libro libro = Libro.nuevoIsbn(0);
 
   @override
   initState() {
@@ -63,9 +63,11 @@ class _MyHomeState extends State<MyHome> {
                   children: <Widget>[
                     ListTile(
                       leading: Icon(Icons.book),
-                      title: Text('${libro?.nombre ?? ""}'),
-                      subtitle: Text(
-                          'Autor: ${libro?.nombreAutor} ${libro?.apellidoAutor}.'),
+                      title: Text(
+                          libro.nuevo ? "Libro desconocido" : libro.nombre),
+                      subtitle: Text(!libro.nuevo
+                          ? 'Autor: ${libro?.nombreAutor} ${libro?.apellidoAutor}.'
+                          : ''),
                     ),
                     RaisedButton(
                       onPressed: () {
@@ -78,7 +80,7 @@ class _MyHomeState extends State<MyHome> {
                           ),
                         );
                       },
-                      child: Text('Mas info'),
+                      child: Text(libro.nuevo ? "Agregar" : "Más info"),
                     ),
                   ],
                 ),
@@ -94,7 +96,6 @@ class _MyHomeState extends State<MyHome> {
   Future<Libro> fetchLibroByBarcode(String barcode) async {
     final String url = 'http://192.168.0.245:3000/libros/barcode';
     final String body = jsonEncode({'isbn': barcode});
-    print('**** Fetching');
     final response = await http.post(
       url,
       headers: {
@@ -104,11 +105,10 @@ class _MyHomeState extends State<MyHome> {
       body: body,
     );
     if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON.
       return Libro.fromJson(json.decode(response.body));
     } else {
-      // If that response was not OK, throw an error.
-      throw Exception('Failed to load Libro');
+      return Libro.nuevoIsbn(int.parse(barcode));
+      // throw Exception('Failed to load Libro');
     }
   }
 
