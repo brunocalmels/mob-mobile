@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import './libro.dart';
 import './libroShow.dart';
-// import 'package:image_picker/image_picker.dart';
+import './libroNew.dart';
 
 void main() {
   runApp(new MyApp());
@@ -54,38 +54,55 @@ class _MyHomeState extends State<MyHome> {
               padding: const EdgeInsets.all(8.0),
             ),
             Text("Código de barras escaneado : " + barcode),
-            Baseline(
-              baselineType: TextBaseline.ideographic,
-              baseline: 60,
-              child: Card(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    ListTile(
-                      leading: Icon(Icons.book),
-                      title: Text(
-                          libro.nuevo ? "Libro desconocido" : libro.nombre),
-                      subtitle: Text(!libro.nuevo
-                          ? 'Autor: ${libro?.nombreAutor} ${libro?.apellidoAutor}.'
-                          : ''),
-                    ),
-                    RaisedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LibroShow(
-                                  libro: libro,
-                                ),
-                          ),
-                        );
-                      },
-                      child: Text(libro.nuevo ? "Agregar" : "Más info"),
-                    ),
-                  ],
+            if (libro != null)
+              Baseline(
+                baselineType: TextBaseline.ideographic,
+                baseline: 60,
+                child: Card(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      if (libro != null)
+                        ListTile(
+                          leading: Icon(Icons.book),
+                          title: Text(
+                              libro.nuevo ? "Libro desconocido" : libro.nombre),
+                          subtitle: Text(!libro.nuevo
+                              ? 'Autor: ${libro?.nombreAutor} ${libro?.apellidoAutor}.'
+                              : ''),
+                        ),
+                      if (libro != null && !libro.nuevo)
+                        RaisedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LibroShow(
+                                      libro: libro,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Text("Más info"),
+                        ),
+                      if (libro != null && libro.nuevo)
+                        RaisedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LibroNew(
+                                      libro: libro,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Text("Agregar"),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            )
+              )
           ],
         ),
       ),
@@ -138,27 +155,6 @@ class _MyHomeState extends State<MyHome> {
     }
   }
 }
-
-// File galleryFile;
-//   imageSelectorGallery() async {
-//     galleryFile = await ImagePicker.pickImage(
-//       source: ImageSource.gallery,
-// // maxHeight: 50.0,
-// // maxWidth: 50.0,
-//     );
-//     print("You selected gallery image : " + galleryFile.path);
-//     setState(() {});
-//   }
-
-// Widget displayImage() {
-//   return new SizedBox(
-//     height: 300.0,
-//     width: 400.0,
-//     child: galleryFile == null
-//         ? new Text('Sorry nothing to display')
-//         : new Image.file(galleryFile),
-//   );
-// }
 
 // // Hace un GET para buscar el libro por ID
 // Future getLibro() async {

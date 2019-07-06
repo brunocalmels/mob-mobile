@@ -4,13 +4,15 @@ class Libro {
   final String apellidoAutor;
   final int isbn;
   final bool nuevo;
+  final int id;
 
   Libro(
       {this.nombre,
       this.nombreAutor,
       this.apellidoAutor,
       this.isbn,
-      this.nuevo});
+      this.nuevo,
+      this.id});
 
   factory Libro.fromJson(Map<String, dynamic> json) {
     return Libro(
@@ -18,6 +20,7 @@ class Libro {
       nombreAutor: json['autor']['nombres'],
       apellidoAutor: json['autor']['apellidos'],
       isbn: json['isbn'],
+      id: json['id'],
       nuevo: false,
     );
   }
@@ -29,6 +32,7 @@ class Libro {
       apellidoAutor: '',
       isbn: isbn,
       nuevo: true,
+      id: 0,
     );
   }
 
@@ -39,5 +43,6 @@ class Libro {
           'apellidos': apellidoAutor,
         },
         'isbn': isbn,
+        'id': id,
       };
 }
