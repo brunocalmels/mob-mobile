@@ -2,33 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import './main.dart';
 import './libro.dart';
-
-// class LibroNew extends StatelessWidget {
-//   final Libro libro;
-
-//   LibroNew({Key key, @required this.libro}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(libro.nombre),
-//       ),
-//       body: Center(
-//         child: Column(
-//           children: <Widget>[
-//             Text('Autor: ${libro?.nombreAutor} ${libro?.apellidoAutor}'),
-//             Text('ISBN: ${libro?.isbn}'),
-//           ],
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           crossAxisAlignment: CrossAxisAlignment.center,
-//           // padding: EdgeInsets.all(16.0),
-//         ),
-//       ),
-//     );
-//   }
-// }
+import './libroShow.dart';
 
 class LibroNew extends StatefulWidget {
   final Libro libro;
@@ -40,9 +16,11 @@ class LibroNew extends StatefulWidget {
 }
 
 class _LibroNewState extends State<LibroNew> {
-  final String url = 'http://192.168.0.245:3000/libros/';
+  final String urlPost = 'http://192.168.0.245:3000/libros/';
+  final String urlget = 'http://192.168.0.245:3000/libros/';
   final _formKey = GlobalKey<FormState>();
   GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey();
+  TextEditingController nombreController = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +37,7 @@ class _LibroNewState extends State<LibroNew> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextFormField(
+                controller: nombreController,
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'Ingresá un nombre';
@@ -71,25 +50,53 @@ class _LibroNewState extends State<LibroNew> {
                   child: RaisedButton(
                     onPressed: () async {
                       if (_formKey.currentState.validate()) {
-                        // Process data.
                         scaffoldKey.currentState.showSnackBar(
-                            SnackBar(content: Text('Processing Data')));
+                            SnackBar(content: Text('Guardando libro')));
+                        Libro nuevoLibro = Libro.fromJson({
+                          ...widget.libro.toJson(),
+                          'nombre': nombreController.text,
+                        });
                         final String body = jsonEncode({
-                          'isbn': widget.libro.isbn,
+                          ...nuevoLibro.toJson(),
                           'autor_id': 1,
-                          // TODO: reemplazar autor
-                          'nombre': 'Libertad libertad libertad',
                         });
                         print('*** Posting: $body');
-                        final response = await http.post(
-                          url,
+                        final responseNew = await http.post(
+                          urlPost,
                           headers: {
                             'Content-type': 'application/json',
                             'Accept': 'application/json',
                           },
                           body: body,
                         );
-                        print('Response: $response.body');
+                        if (responseNew.statusCode == 201) {
+                          scaffoldKey.currentState.showSnackBar(
+                              SnackBar(content: Text('Libro guardado')));
+
+                          final responseShow = await http.get(
+                            jsonDecode(responseNew.body)['url'],
+                          );
+                          if (responseShow.statusCode == 200) {
+                            Libro libroGuardado =
+                                Libro.fromJson(json.decode(responseShow.body));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LibroShow(
+                                      libro: libroGuardado,
+                                    ),
+                              ),
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => MyHome()),
+                            );
+                          }
+                        } else {
+                          scaffoldKey.currentState.showSnackBar(
+                              SnackBar(content: Text('Error guardando libro')));
+                        }
                       }
                     },
                     child: Text('Guardar'),

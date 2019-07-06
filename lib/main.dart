@@ -28,7 +28,7 @@ class MyHome extends StatefulWidget {
 
 class _MyHomeState extends State<MyHome> {
   String barcode = "";
-  Libro libro = Libro.nuevoIsbn(0);
+  Libro libro;
 
   @override
   initState() {

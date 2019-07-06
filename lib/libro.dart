@@ -1,10 +1,10 @@
 class Libro {
-  final String nombre;
-  final String nombreAutor;
-  final String apellidoAutor;
-  final int isbn;
-  final bool nuevo;
-  final int id;
+  String nombre;
+  String nombreAutor;
+  String apellidoAutor;
+  int isbn;
+  bool nuevo;
+  int id;
 
   Libro(
       {this.nombre,
@@ -33,6 +33,17 @@ class Libro {
       isbn: isbn,
       nuevo: true,
       id: 0,
+    );
+  }
+
+  factory Libro.copy(Libro libro) {
+    return Libro(
+      nombre: libro.nombre,
+      nombreAutor: libro.nombreAutor,
+      apellidoAutor: libro.apellidoAutor,
+      isbn: libro.isbn,
+      nuevo: true,
+      id: libro.id,
     );
   }
 
