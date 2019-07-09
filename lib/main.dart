@@ -4,9 +4,10 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import './libro.dart';
-import './libroShow.dart';
-import './libroNew.dart';
+import 'package:mob/models/libro.dart';
+import 'package:mob/libroShow.dart';
+import 'package:mob/libroNew.dart';
+import 'package:mob/config/my_globals.dart';
 
 void main() {
   runApp(new MyApp());
@@ -111,7 +112,8 @@ class _MyHomeState extends State<MyHome> {
 
   // Hace un POST para buscar el barcode
   Future<Libro> fetchLibroByBarcode(String barcode) async {
-    final String url = 'http://192.168.0.245:3000/libros/barcode';
+    final String url = MyGlobals.ROUTES['POST_BARCODE'];
+    // final String url = 'http://192.168.0.245:3000/libros/barcode';
     final String body = jsonEncode({'isbn': barcode});
     final response = await http.post(
       url,

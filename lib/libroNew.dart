@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import './main.dart';
-import './libro.dart';
-import './libroShow.dart';
+import 'package:mob/buscadorAutores.dart';
+import 'package:mob/main.dart';
+import 'package:mob/models/libro.dart';
+import 'package:mob/models/autor.dart';
+import 'package:mob/libroShow.dart';
+import 'package:mob/config/my_globals.dart';
 
 class LibroNew extends StatefulWidget {
   final Libro libro;
@@ -16,11 +20,18 @@ class LibroNew extends StatefulWidget {
 }
 
 class _LibroNewState extends State<LibroNew> {
-  final String urlPost = 'http://192.168.0.245:3000/libros/';
-  final String urlget = 'http://192.168.0.245:3000/libros/';
+  final String urlPost = MyGlobals.ROUTES['POST_LIBROS'];
+  final String urlget = MyGlobals.ROUTES['GET_LIBROS'];
   final _formKey = GlobalKey<FormState>();
   GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey();
   TextEditingController nombreController = new TextEditingController();
+  Autor autor;
+
+  _updateAutor(Autor item) {
+    print('*** Setting state: $item ***');
+    setState(() => autor = item);
+    print('*** Autor: ${autor.id} ***');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +48,20 @@ class _LibroNewState extends State<LibroNew> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextFormField(
+                decoration: new InputDecoration(
+                  hasFloatingPlaceholder: true,
+                  labelText: "Nombre del libro",
+                  hintText: 'Cien años de soledad',
+                ),
                 controller: nombreController,
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'Ingresá un nombre';
                   }
                 },
+              ),
+              BuscadorAutores(
+                parentAction: _updateAutor,
               ),
               Center(
                 child: Padding(
@@ -56,11 +75,13 @@ class _LibroNewState extends State<LibroNew> {
                           ...widget.libro.toJson(),
                           'nombre': nombreController.text,
                         });
+                        debugger();
+                        print('SENDING NEW LIBRO WITH AUTOR: ${autor}');
                         final String body = jsonEncode({
                           ...nuevoLibro.toJson(),
-                          'autor_id': 1,
+                          'autor_id': autor.id,
+                          // 'autor_id': 1,
                         });
-                        print('*** Posting: $body');
                         final responseNew = await http.post(
                           urlPost,
                           headers: {
