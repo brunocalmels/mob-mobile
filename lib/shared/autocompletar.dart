@@ -14,9 +14,7 @@ class Autocompletar extends StatefulWidget {
 
 class _AutocompletarState extends State<Autocompletar> {
   GlobalKey<AutoCompleteTextFieldState<Autor>> key = new GlobalKey();
-
   AutoCompleteTextField searchTextField;
-
   TextEditingController controller = new TextEditingController();
 
   @override
@@ -37,13 +35,6 @@ class _AutocompletarState extends State<Autocompletar> {
               Text(
                 item.apellidos,
               ),
-              // Text(
-              //   "@${item.username}",
-              //   style: TextStyle(
-              //     color: Colors.black38,
-              //     fontSize: 10,
-              //   ),
-              // ),
             ],
           ),
         );
@@ -58,7 +49,6 @@ class _AutocompletarState extends State<Autocompletar> {
       itemSubmitted: (Autor item) {
         setState(
             () => searchTextField.textField.controller.text = item.apellidos);
-        print('**** itemSubmitted ${item.apellidos} ****');
         widget.setItem(item);
       },
       key: key,

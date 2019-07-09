@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:mob/buscadorAutores.dart';
+import 'package:mob/config/my_globals.dart';
 import 'package:mob/main.dart';
 import 'package:mob/models/libro.dart';
 import 'package:mob/models/autor.dart';
 import 'package:mob/libroShow.dart';
-import 'package:mob/config/my_globals.dart';
+import 'package:mob/buscadorAutores.dart';
+import 'package:mob/autorNew.dart';
 
 class LibroNew extends StatefulWidget {
   final Libro libro;
@@ -26,11 +26,10 @@ class _LibroNewState extends State<LibroNew> {
   GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey();
   TextEditingController nombreController = new TextEditingController();
   Autor autor;
+  bool autorNuevoSet = false;
 
   _updateAutor(Autor item) {
-    print('*** Setting state: $item ***');
     setState(() => autor = item);
-    print('*** Autor: ${autor.id} ***');
   }
 
   @override
@@ -38,7 +37,7 @@ class _LibroNewState extends State<LibroNew> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
-        title: Text("Agregar nuevo libro"),
+        title: Text("Nuevo libro"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -60,27 +59,59 @@ class _LibroNewState extends State<LibroNew> {
                   }
                 },
               ),
-              BuscadorAutores(
-                parentAction: _updateAutor,
-              ),
+              autorNuevoSet
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text(
+                        'Autor: ${autor.nombres} ${autor.apellidos}',
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 20,
+                        ),
+                      ),
+                    )
+                  : BuscadorAutores(
+                      parentAction: _updateAutor,
+                    ),
+              if (!autorNuevoSet)
+                RaisedButton(
+                  onPressed: () async {
+                    Autor autorNuevo = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AutorNew(),
+                      ),
+                    );
+                    if (autorNuevo != null) {
+                      setState(() => autor = autorNuevo);
+                      setState(() => autorNuevoSet = true);
+                    }
+                  },
+                  child: Text('Nuevo autor'),
+                ),
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: RaisedButton(
                     onPressed: () async {
-                      if (_formKey.currentState.validate()) {
+                      if (autor == null) {
+                        scaffoldKey.currentState.showSnackBar(SnackBar(
+                          content: Text(
+                              'Buscá y eleccioná un autor. O agregalo si no lo encontrás.'),
+                        ));
+                      } else if (_formKey.currentState.validate()) {
                         scaffoldKey.currentState.showSnackBar(
-                            SnackBar(content: Text('Guardando libro')));
+                          SnackBar(
+                            content: Text('Guardando libro'),
+                          ),
+                        );
                         Libro nuevoLibro = Libro.fromJson({
                           ...widget.libro.toJson(),
                           'nombre': nombreController.text,
                         });
-                        debugger();
-                        print('SENDING NEW LIBRO WITH AUTOR: ${autor}');
                         final String body = jsonEncode({
                           ...nuevoLibro.toJson(),
                           'autor_id': autor.id,
-                          // 'autor_id': 1,
                         });
                         final responseNew = await http.post(
                           urlPost,
