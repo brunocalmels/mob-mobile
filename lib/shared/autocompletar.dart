@@ -22,7 +22,7 @@ class _AutocompletarState extends State<Autocompletar> {
     return searchTextField = AutoCompleteTextField<Autor>(
       decoration: new InputDecoration(
         hasFloatingPlaceholder: true,
-        labelText: "Autor (apellido)",
+        labelText: "Autor",
         hintText: 'García Márquez',
       ),
       itemBuilder: (BuildContext context, Autor item) {
@@ -33,22 +33,23 @@ class _AutocompletarState extends State<Autocompletar> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                item.apellidos,
+                item.nombres + ' ' + item.apellidos,
               ),
             ],
           ),
         );
       },
       itemFilter: (Autor item, String query) {
-        return item.apellidos.toLowerCase().contains(query.toLowerCase());
+        return (item.apellidos.toLowerCase().contains(query.toLowerCase()) ||
+            item.nombres.toLowerCase().contains(query.toLowerCase()));
       },
       itemSorter: (Autor a, Autor b) {
         return a.apellidos.compareTo(b.apellidos);
       },
       clearOnSubmit: false,
       itemSubmitted: (Autor item) {
-        setState(
-            () => searchTextField.textField.controller.text = item.apellidos);
+        setState(() => searchTextField.textField.controller.text =
+            item.nombres + ' ' + item.apellidos);
         widget.setItem(item);
       },
       key: key,

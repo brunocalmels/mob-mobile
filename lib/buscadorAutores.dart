@@ -17,7 +17,6 @@ class BuscadorAutores extends StatefulWidget {
 
 class _BuscadorAutoresState extends State<BuscadorAutores> {
   List<Autor> sugerencias = [];
-  // List<Partido> partidos = [];
   Autor autor;
 
   Future _getAutores() async {
@@ -71,14 +70,6 @@ class _BuscadorAutoresState extends State<BuscadorAutores> {
                   child: CircularProgressIndicator(),
                 ),
         ),
-        // partidos.length == 0
-        //     ? Center(
-        //         child: Padding(
-        //           padding: const EdgeInsets.all(10),
-        //           child: Text('No hay partidos'),
-        //         ),
-        //       )
-        //     : ListaPartidos(partidos: partidos),
       ],
     );
   }
